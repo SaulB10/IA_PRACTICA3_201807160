@@ -1,55 +1,75 @@
 package IA1jun23;
+import java.awt.Color;
+import java.util.Random;
+import static robocode.util.Utils.normalRelativeAngleDegrees;
 import robocode.*;
-//import java.awt.Color;
+import robocode.HitByBulletEvent;
+import robocode.HitWallEvent;
+import robocode.RateControlRobot;
+import robocode.ScannedRobotEvent;
+import robocode.Robot;
+
 // API help : https://robocode.sourceforge.io/docs/robocode/robocode/Robot.html
 
 /**
  * R201807160 - a robot by (your name here)
  */
-public class R201807160 extends Robot
+public class R201807160 extends RateControlRobot
 {
-	/**
-	 * run: R201807160's default behavior
-	 */
+	int turnCounter;
 	public void run() {
-		// Initialization of the robot should be put here
+		setBodyColor(new Color(255, 255, 69));
+		setGunColor(new Color(255, 69, 255));
+		setRadarColor(new Color(69, 255, 255));
 
-		// After trying out your robot, try uncommenting the import at the top,
-		// and the next line:
-
-		// setColors(Color.red,Color.blue,Color.green); // body,gun,radar
-
-		// Robot main loop
-		while(true) {
-			// Replace the next 4 lines with any behavior you would like
-			ahead(100);
-			turnGunRight(360);
-			back(100);
-			turnGunRight(360);
+		turnCounter = 0;
+		setGunRotationRate(15);
+		
+		while (true) {
+			turnGunRight(10); // Scans automatically
 		}
 	}
 
-	/**
-	 * onScannedRobot: What to do when you see another robot
-	 */
 	public void onScannedRobot(ScannedRobotEvent e) {
-		// Replace the next line with any behavior you would like
-		fire(1);
+		// Calculate exact location of the robot
+		double rotacionCompleta = getHeading() + e.getBearing();
+		double rotacionCanon = normalRelativeAngleDegrees(rotacionCompleta - getGunHeading());
+
+		if (Math.abs(rotacionCanon) <= 3) {
+			turnGunRight(rotacionCanon);
+			if (getGunHeat() == 0) {
+				fire(1);
+			}
+		}
+		else {
+			turnGunRight(rotacionCanon);
+		}
+		if (rotacionCanon == 0) {
+			scan();
+		}
 	}
 
-	/**
-	 * onHitByBullet: What to do when you're hit by a bullet
-	 */
 	public void onHitByBullet(HitByBulletEvent e) {
-		// Replace the next line with any behavior you would like
-		back(10);
+			if (turnCounter % 64 == 0) {
+				setTurnRate(0);
+				setVelocityRate(4);
+			}
+			if (turnCounter % 64 == 32) {
+				setVelocityRate(-6);
+			}
+			turnCounter++;
+			execute();
 	}
 	
-	/**
-	 * onHitWall: What to do when you hit a wall
-	 */
 	public void onHitWall(HitWallEvent e) {
-		// Replace the next line with any behavior you would like
-		back(20);
-	}	
+			if (turnCounter % 64 == 0) {
+				setTurnRate(0);
+				setVelocityRate(4);
+			}
+			if (turnCounter % 64 == 32) {
+				setVelocityRate(-6);
+			}
+			turnCounter++;
+			execute();
+	}
 }
